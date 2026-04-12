@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Neon requiere pool de conexiones para producción:
+  // directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// Canales de YouTube trackeados
+// ─────────────────────────────────────────────
+model Channel {
+  id               String            @id @default(cuid())
+  youtubeChannelId String            @unique @map("youtube_channel_id")
+  name             String
+  handle           String?           // Ej: "@luzutv"
+  description      String?
+  country          String?
+  thumbnailUrl     String?           @map("thumbnail_url")
+  publishedAt      DateTime?         @map("published_at")
+  active           Boolean           @default(true)
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+
+  snapshots        ChannelSnapshot[]
+  aiInsights       DailyAiInsight[]
+
+  @@map("channels")
+}
+
+// ─────────────────────────────────────────────
+// Snapshot diario de métricas por canal
+// Se guarda una vez por día (cron 23:00 hs)
+// ─────────────────────────────────────────────
+model ChannelSnapshot {
+  id          String   @id @default(cuid())
+  channelId   String   @map("channel_id")
+  channel     Channel  @relation(fields: [channelId], references: [id])
+  date        DateTime @db.Date          // Solo la fecha, sin hora
+  subscribers BigInt                     // Suscriptores actuales
+  totalViews  BigInt   @map("total_views") // Vistas totales acumuladas
+  videoCount  Int      @map("video_count") // Cantidad de videos públicos
+  fetchedAt   DateTime @default(now()) @map("fetched_at")
+
+  @@unique([channelId, date])
+  @@index([date])
+  @@map("channel_snapshots")
+}
+
+// ─────────────────────────────────────────────
+// Análisis Diario Generado por IA
+// Guarda la explicación cualitativa de por qué creció un canal
+// ─────────────────────────────────────────────
+model DailyAiInsight {
+  id              String   @id @default(cuid())
+  date            DateTime @db.Date
+  channelId       String   @map("channel_id")
+  channel         Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  insightText     String   @db.Text
+  promptContext   String?  @db.Text // Datos en crudo que usamos para que la IA lea
+
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([channelId, date])
+  @@index([date])
+  @@map("daily_ai_insights")
+}
+
