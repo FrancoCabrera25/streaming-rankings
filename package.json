@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "description": "Backend para ranking de canales de streaming argentinos",
   "scripts": {
-    "build": "nest build",
+    "build": "npm run prisma:generate && nest build",
+    "postinstall": "npm run prisma:generate",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
