@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { ChannelsModule } from './channels/channels.module';
@@ -17,6 +19,16 @@ import { AiModule } from './ai/ai.module';
     // Habilita los decoradores @Cron, @Timeout, etc.
     ScheduleModule.forRoot(),
 
+    // Protege con rate limit global
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: Number(process.env.THROTTLE_TTL ?? 60),
+          limit: Number(process.env.THROTTLE_LIMIT ?? 20),
+        },
+      ],
+    }),
+
     // Módulos de la app
     PrismaModule,
     YoutubeModule,
@@ -25,6 +37,12 @@ import { AiModule } from './ai/ai.module';
     RankingsModule,
     SchedulerModule,
     AiModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}
