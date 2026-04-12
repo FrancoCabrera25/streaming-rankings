@@ -10,6 +10,7 @@ import { MetricsModule } from './metrics/metrics.module';
 import { RankingsModule } from './rankings/rankings.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { AiModule } from './ai/ai.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { AiModule } from './ai/ai.module';
     SchedulerModule,
     AiModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,
