@@ -12,19 +12,15 @@ export class SchedulerService {
   ) { }
 
   /**
-   * Cron: todos los días a las 23:00 hs Argentina (ART = UTC-3)
-   * En cron UTC: 02:00 AM UTC del día siguiente = "0 2 * * *"
+   * Método para recolección diaria de métricas.
+   * Se ejecuta vía API endpoint en Vercel (cron configurado en vercel.json a las 23:30 ART).
    *
    * Flujo:
    * 1. Recopila métricas de todos los canales activos (YouTube API)
    * 2. Calcula rankings diario, semanal y mensual
    */
-  @Cron('0 2 * * *', {
-    name: 'daily-collection',
-    timeZone: 'America/Argentina/Buenos_Aires',
-  })
   async handleDailyCollection() {
-    this.logger.log('⏰ Cron 23:00 ART — iniciando recolección diaria');
+    this.logger.log('⏰ Cron 23:30 ART — iniciando recolección diaria');
 
     try {
       const result = await this.metricsService.collectDailyMetrics();
