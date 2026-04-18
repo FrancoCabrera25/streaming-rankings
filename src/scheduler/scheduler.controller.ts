@@ -1,4 +1,4 @@
-import { Controller, Post, Logger } from '@nestjs/common';
+import { Controller, Post, Get, Logger } from '@nestjs/common';
 import { SchedulerService } from './scheduler.service';
 
 @Controller('scheduler')
@@ -7,6 +7,7 @@ export class SchedulerController {
 
   constructor(private readonly schedulerService: SchedulerService) {}
 
+  @Get('daily')
   @Post('daily')
   async triggerDailyCollection() {
     this.logger.log('🔄 Triggering daily collection via API');
